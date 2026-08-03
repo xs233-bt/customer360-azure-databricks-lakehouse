@@ -1,0 +1,25 @@
+bundle:
+  name: customer360-azure-databricks-lakehouse
+
+include:
+  - resources/*.yml
+
+sync:
+  include:
+    - src/**
+    - resources/**
+    - synapse/**
+    - tests/**
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-7405616083723532.12.azuredatabricks.net
+
+  prod:
+    mode: production
+    workspace:
+      host: https://adb-7405616083723532.12.azuredatabricks.net
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

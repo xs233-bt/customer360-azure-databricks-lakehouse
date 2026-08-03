@@ -1,0 +1,60 @@
+resources:
+  jobs:
+    customer360_lakehouse_job:
+      name: customer360-lakehouse-${bundle.target}
+
+      tasks:
+        - task_key: silver_customers
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/silver/01_silver_customers.py
+
+        - task_key: silver_products
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/silver/02_silver_products.py
+
+        - task_key: silver_orders
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/silver/03_silver_orders.py
+
+        - task_key: silver_click_events
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/silver/04_silver_click_events.py
+
+        - task_key: dim_customer
+          depends_on:
+            - task_key: silver_customers
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/gold/01_dim_customer.py
+
+        - task_key: dim_product
+          depends_on:
+            - task_key: silver_products
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/gold/02_dim_product.py
+
+        - task_key: fact_orders
+          depends_on:
+            - task_key: silver_orders
+            - task_key: dim_customer
+            - task_key: dim_product
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/gold/03_fact_orders.py
+
+        - task_key: gold_click_metrics
+          depends_on:
+            - task_key: silver_click_events
+          environment_key: default
+          notebook_task:
+            notebook_path: ../src/gold/04_gold_click_metrics.py
+
+      environments:
+        - environment_key: default
+          spec:
+            client: "1"
