@@ -1,0 +1,66 @@
+name: Deploy Databricks Bundle - Dev
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "resources/**"
+      - "databricks.yml"
+      - ".github/workflows/databricks-cicd.yml"
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "resources/**"
+      - "databricks.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Bundle
+    runs-on: ubuntu-latest
+
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Show CLI version
+        run: databricks version
+
+      - name: Validate dev bundle
+        run: databricks bundle validate --target dev
+
+  deploy:
+    name: Deploy Bundle
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Deploy dev bundle
+        run: databricks bundle deploy --target dev
