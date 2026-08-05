@@ -55,8 +55,8 @@ stages:
 
     jobs:
       - deployment: DeployBundle
-        displayName: Deploy Bundle to Dev
-        environment: customer360-dev
+        displayName: Deploy Bundle to Production
+        environment: customer360-prod
         pool:
           vmImage: ubuntu-24.04
 
@@ -73,7 +73,7 @@ stages:
 
                 - bash: |
                     databricks bundle deploy --target dev
-                  displayName: Deploy Dev Bundle
+                  displayName: Deploy Production Bundle
                   env:
                     DATABRICKS_HOST: $(DATABRICKS_HOST)
                     DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
