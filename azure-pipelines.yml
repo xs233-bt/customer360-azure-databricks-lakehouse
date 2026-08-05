@@ -27,7 +27,7 @@ stages:
       - job: ValidateBundle
         displayName: Validate Bundle
         pool:
-          vmImage: ubuntu-latest
+          vmImage: ubuntu-24.04
 
         steps:
           - checkout: self
@@ -58,7 +58,7 @@ stages:
         displayName: Deploy Bundle to Dev
         environment: customer360-dev
         pool:
-          vmImage: ubuntu-latest
+          vmImage: ubuntu-24.04
 
         strategy:
           runOnce:
