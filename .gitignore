@@ -1,3 +1,5 @@
 github-databricks-tokens.txt
 *.env
 .databrickscfg
+Endpoint=sbcustomer360-eventhub-neo.txt
+streaming/.env
