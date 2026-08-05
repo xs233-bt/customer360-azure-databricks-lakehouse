@@ -1,0 +1,79 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/*
+      - resources/*
+      - databricks.yml
+      - azure-pipelines.yml
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/*
+      - resources/*
+      - databricks.yml
+
+stages:
+  - stage: Validate
+    displayName: Validate Databricks Bundle
+
+    jobs:
+      - job: ValidateBundle
+        displayName: Validate Bundle
+        pool:
+          vmImage: ubuntu-latest
+
+        steps:
+          - checkout: self
+
+          - bash: |
+              curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+              databricks version
+            displayName: Install Databricks CLI
+
+          - bash: |
+              databricks bundle validate --target dev
+            displayName: Validate Dev Bundle
+            env:
+              DATABRICKS_HOST: $(DATABRICKS_HOST)
+              DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
+
+  - stage: Deploy
+    displayName: Deploy Databricks Bundle
+    dependsOn: Validate
+    condition: |
+      and(
+        succeeded(),
+        eq(variables['Build.SourceBranch'], 'refs/heads/main')
+      )
+
+    jobs:
+      - deployment: DeployBundle
+        displayName: Deploy Bundle to Dev
+        environment: customer360-dev
+        pool:
+          vmImage: ubuntu-latest
+
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                - bash: |
+                    curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+                    databricks version
+                  displayName: Install Databricks CLI
+
+                - bash: |
+                    databricks bundle deploy --target dev
+                  displayName: Deploy Dev Bundle
+                  env:
+                    DATABRICKS_HOST: $(DATABRICKS_HOST)
+                    DATABRICKS_TOKEN: $(DATABRICKS_TOKEN)
